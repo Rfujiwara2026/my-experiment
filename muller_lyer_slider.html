@@ -252,14 +252,26 @@
             「これだ！」と思う長さに調整できたら、画面下部の<strong>「決定」</strong>ボタンを押してください。
             全部で <strong>12試行</strong> あります。
           </p>
-          <div class="text-center mt-8">
-            <span class="inline-block bg-slate-100 text-slate-700 px-4 py-2 rounded font-medium animate-pulse">
-              スペースキーを押して実験を開始してください
+          <div class="text-center mt-8 flex flex-col items-center gap-3">
+            <button id="start-experiment-btn" class="jspsych-btn px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded font-bold shadow-lg transition-all duration-200 cursor-pointer text-base">
+              実験を開始する
+            </button>
+            <span class="inline-block text-slate-400 text-xs mt-1">
+              またはスペースキーを押して開始
             </span>
           </div>
         </div>
       `,
-      choices: [' ']
+      choices: [' '],
+      // ボタンクリックでも試行を終了（次のタイムラインに進む）できるようにリスナーを設定
+      on_load: function() {
+        const btn = document.getElementById('start-experiment-btn');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            jsPsych.finishTrial();
+          });
+        }
+      }
     };
     timeline.push(instructions);
 
@@ -326,7 +338,7 @@
           data.pse = Number(data.response);
           data.adjusted_length = data.pse;
 
-          // 錯視量（誤差：PSE - 物理的な標準の長さ200px）
+          // 錯視量（誤差：PSE - 物理的な標準 of 長さ200px）
           data.error_amount = data.pse - 200;
           data.illusion_magnitude = data.error_amount;
         }
@@ -381,17 +393,17 @@
 
       const gasUrl = 'https://script.google.com/macros/s/AKfycbxuO-fzwAjMUlCxf2oUr4tOiNO34SUPX16I1tr8gVIK2PKgaldS-y4wliXYN42Xu2l2zA/exec';
 
-      // Fetch APIを利用して非同期POST送信 (GASのCORS挙動に対応するためにno-cors形式に調整するか、通常仕様にするか。ここではGAS WebApp一般仕様のPOSTに対応)
+      // Fetch APIを利用して非同期POST送信
       fetch(gasUrl, {
         method: 'POST',
-        mode: 'no-cors', // クロスオリジンセキュリティエラー回避（GASの仕様上レスポンスが不透明になる場合に対応）
+        mode: 'no-cors', // クロスオリジン制限回避
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload)
       })
       .then(() => {
-        // 送信成功（no-corsの場合は常にthenに入ります）
+        // 送信成功
         showResults(true, null);
       })
       .catch((error) => {
@@ -548,7 +560,7 @@
             </div>
           </div>
 
-          <!-- オプション: CSVダウンロードリンク（控えめな配置） -->
+          <!-- オプション: CSVダウンロードリンク -->
           <div class="text-center mt-6 pt-4 border-t border-slate-100">
             <button onclick="downloadCSV()" class="text-slate-500 hover:text-slate-700 font-medium text-sm inline-flex items-center gap-1 transition-colors">
               📥 手動バックアップとしてCSVファイルを保存する
