@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>線の長さテスト（ミュラー・リヤー錯視実験）</title>
+  
+  <!-- Tailwind CSS for modern layout & styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- jsPsych v7.3.0 core (browser build) and styles -->
+  <script src="https://unpkg.com/jspsych@7.3.0/dist/index.browser.js"></script>
+  <link href="https://unpkg.com/jspsych@7.3.0/css/jspsych.css" rel="stylesheet" type="text/css" />
+  
+  <!-- jsPsych v7 plugins (browser builds) -->
+  <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2/dist/index.browser.js"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-html-button-response@1.1.2/dist/index.browser.js"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-canvas-slider-response@1.1.2/dist/index.browser.js"></script>
+  <script src="https://unpkg.com/@jspsych/plugin-survey-text@1.1.2/dist/index.browser.js"></script>
+  
+  <style>
+    /* 全画面の中央寄せとモダンな背景スタイリング */
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      font-family: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Meiryo', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .jspsych-content-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      min-height: 100vh;
+      padding: 1rem 0;
+    }
+    .jspsych-content {
+      max-width: 800px;
+      width: 92%;
+      background: white;
+      padding: 2.5rem 2rem;
+      border-radius: 1.25rem;
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 8px 15px -6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      text-align: center;
+    }
+    
+    /* ルビ（ふりがな）の表示崩れ防止スタイリング */
+    ruby {
+      ruby-position: over;
+      line-height: 1.7; /* ルビが表示されても行同士が重ならないよう十分な高さを確保 */
+    }
+    rt {
+      font-size: 0.55em;
+      color: #64748b; /* 読みやすいソフトなグレー */
+      letter-spacing: 0.05em;
+      padding-bottom: 0.15em;
+      user-select: none; /* コピー時にルビ文字が本文に混ざるのを防ぐ */
+    }
+
+    /* jspsychのスライダーの幅をCanvasと合わせるためのスタイル */
+    .jspsych-canvas-slider-response-container {
+      width: 100% !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #jspsych-canvas-slider-response-wrapper {
+      width: 100% !important;
+    }
+    
+    /* スライダー（レンジ入力）のスマートフォン・PC操作性の最適化 */
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 85% !important;
+      max-width: 400px;
+      margin: 25px 0;
+      cursor: pointer;
+      background: transparent;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    /* トラック（溝）のスタイル */
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    input[type=range]::-moz-range-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    /* つまみ（Thumb）のスタイル：押しやすく大きくする */
+    input[type=range]::-webkit-slider-thumb {
+      height: 28px;
+      width: 28px;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -10px;
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+      transition: transform 0.1s, background-color 0.1s;
+    }
+    input[type=range]::-webkit-slider-thumb:active {
+      transform: scale(1.15);
+      background: #1d4ed8;
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 28px;
+      width: 28px;
+      border: none;
+      border-radius: 50%;
+      background: #3b82f6;
+      cursor: pointer;
+      box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4);
+      transition: transform 0.1s, background-color 0.1s;
+    }
+    input[type=range]::-moz-range-thumb:active {
+      transform: scale(1.15);
+      background: #1d4ed8;
+    }
+
+    /* ボタン全体のモダン化 */
+    button.jspsych-btn, .survey-btn {
+      background-color: #3b82f6 !important;
+      color: white !important;
+      padding: 0.8rem 2.2rem !important;
+      border-radius: 0.75rem !important;
+      font-weight: 700 !important;
+      font-size: 1.1rem !important;
+      border: none !important;
+      transition: all 0.2s !important;
+      box-shadow: 0 4px 10px -1px rgba(59, 130, 246, 0.3) !important;
+    }
+    button.jspsych-btn:hover, .survey-btn:hover {
+      background-color: #2563eb !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 6px 15px -1px rgba(37, 99, 235, 0.4) !important;
+    }
+    button.jspsych-btn:active, .survey-btn:active {
+      transform: translateY(1px) !important;
+    }
+
+    /* Survey Textの入力エリアのスタイリング */
+    .jspsych-survey-text-question input[type="text"] {
+      width: 100% !important;
+      max-width: 320px;
+      padding: 0.75rem 1rem !important;
+      border: 2px solid #cbd5e1 !important;
+      border-radius: 0.5rem !important;
+      font-size: 1.1rem !important;
+      outline: none !important;
+      transition: border-color 0.2s !important;
+    }
+    .jspsych-survey-text-question input[type="text"]:focus {
+      border-color: #3b82f6 !important;
+    }
+
+    /* 実験データのテーブル用 */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 12px 14px;
+      text-align: center;
+    }
+    th {
+      background-color: #f1f5f9;
+      font-weight: 600;
+      color: #334155;
+    }
+    tr:nth-child(even) {
+      background-color: #f8fafc;
+    }
+    /* Canvasラッパー */
+    #jspsych-canvas-stimulus {
+      max-width: 100%;
+      height: auto !important;
+      background: #fafafa;
+      border-radius: 0.75rem;
+      border: 1px solid #f1f5f9;
+    }
+  </style>
+</head>
+<body>
+  <div id="jspsych-target"></div>
+
+  <script>
+    // グローバル変数として参加者IDを保持
+    let participantId = "unknown";
+
+    // 1. jsPsychの初期化
+    const jsPsych = initJsPsych({
+      display_element: 'jspsych-target',
+      on_finish: function() {
+        sendDataToGAS();
+      }
+    });
+
+    // 2. 実験条件の設定
+    // 角度（15度, 75度）× 羽の長さ（20px, 50px）の4条件
+    const factors = {
+      angle: [15, 75],
+      feather_length: [20, 50]
+    };
+    
+    // 4条件の組み合わせを作成
+    let design = [];
+    for (let a of factors.angle) {
+      for (let f of factors.feather_length) {
+        design.push({ angle: a, feather_length: f });
+      }
+    }
+
+    // 各条件3回ずつ、計12試行のリストを作成
+    const repetitions = 3;
+    let trial_conditions = [];
+    for (let i = 0; i < repetitions; i++) {
+      trial_conditions = trial_conditions.concat(JSON.parse(JSON.stringify(design)));
+    }
+    
+    // 試行リストのシャッフル
+    trial_conditions = jsPsych.randomization.shuffle(trial_conditions);
+    const total_trials = trial_conditions.length;
+
+    // 3. ミュラー・リヤー錯視の描画ロジック
+    // Canvas内に「上半分に標準刺激（内向き）」、「下半分に比較刺激（外向き）」を描画する
+    function drawMullerLyer(canvas, current_length, angle, feather_length) {
+      const ctx = canvas.getContext('2d');
+      // クリア
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#0f172a'; // シックな黒
+
+      const centerX = canvas.width / 2;
+      const std_y = canvas.height * 0.3;  // 標準刺激（上半分）のY座標
+      const comp_y = canvas.height * 0.7; // 比較刺激（下半分）のY座標
+
+      const std_length = 200; // 標準刺激は200px固定
+
+      // 角度をラジアンに変換
+      const rad = (angle * Math.PI) / 180;
+
+      // ==========================================
+      // A. 上半分: 標準刺激 (内向き羽 '<------>')
+      // ==========================================
+      const std_startX = centerX - (std_length / 2);
+      const std_endX = centerX + (std_length / 2);
+
+      // 主軸
+      ctx.beginPath();
+      ctx.moveTo(std_startX, std_y);
+      ctx.lineTo(std_endX, std_y);
+      ctx.stroke();
+
+      // 左側の内向き羽 (右方向へ伸びる羽)
+      ctx.beginPath();
+      ctx.moveTo(std_startX, std_y);
+      ctx.lineTo(std_startX + feather_length * Math.cos(rad), std_y - feather_length * Math.sin(rad));
+      ctx.moveTo(std_startX, std_y);
+      ctx.lineTo(std_startX + feather_length * Math.cos(rad), std_y + feather_length * Math.sin(rad));
+      // 右側の内向き羽 (左方向へ伸びる羽)
+      ctx.moveTo(std_endX, std_y);
+      ctx.lineTo(std_endX - feather_length * Math.cos(rad), std_y - feather_length * Math.sin(rad));
+      ctx.moveTo(std_endX, std_y);
+      ctx.lineTo(std_endX - feather_length * Math.cos(rad), std_y + feather_length * Math.sin(rad));
+      ctx.stroke();
+
+      // ==========================================
+      // B. 下半分: 比較刺激 (外向き羽 '>------<')
+      // ==========================================
+      const comp_startX = centerX - (current_length / 2);
+      const comp_endX = centerX + (current_length / 2);
+
+      // 主軸
+      ctx.beginPath();
+      ctx.moveTo(comp_startX, comp_y);
+      ctx.lineTo(comp_endX, comp_y);
+      ctx.stroke();
+
+      // 左側の外向き羽 (左方向へ伸びる羽)
+      ctx.beginPath();
+      ctx.moveTo(comp_startX, comp_y);
+      ctx.lineTo(comp_startX - feather_length * Math.cos(rad), comp_y - feather_length * Math.sin(rad));
+      ctx.moveTo(comp_startX, comp_y);
+      ctx.lineTo(comp_startX - feather_length * Math.cos(rad), comp_y + feather_length * Math.sin(rad));
+      // 右側の外向き羽 (右方向へ伸びる羽)
+      ctx.moveTo(comp_endX, comp_y);
+      ctx.lineTo(comp_endX + feather_length * Math.cos(rad), comp_y - feather_length * Math.sin(rad));
+      ctx.moveTo(comp_endX, comp_y);
+      ctx.lineTo(comp_endX + feather_length * Math.cos(rad), comp_y + feather_length * Math.sin(rad));
+      ctx.stroke();
+    }
+
+    // 4. 実験タイムラインの構築
+    const timeline = [];
+
+    // A. 参加者情報入力画面 (jsPsychSurveyText) - ルビ（ふりがな）追加
+    const survey_trial = {
+      type: jsPsychSurveyText,
+      questions: [
+        {
+          prompt: `
+            <div class="space-y-2 mb-4">
+              <h1 class="text-2xl font-bold text-slate-800"><ruby>参加<rt>さんか</rt></ruby>コードを<ruby>入力<rt>にゅうりょく</rt></ruby>してください</h1>
+              <p class="text-slate-500 text-sm"><ruby>実験用<rt>じっけんよう</rt></ruby>IDまたは<ruby>任意<rt>にんい</rt></ruby>のなまえを<ruby>入力<rt>にゅうりょく</rt></ruby>してください。</p>
+            </div>
+          `,
+          placeholder: "例: SUB001",
+          required: true,
+          name: "participant_id"
+        }
+      ],
+      button_label: "次へ進む",
+      on_finish: function(data) {
+        participantId = data.response.participant_id.trim();
+      }
+    };
+    timeline.push(survey_trial);
+
+    // B. 説示・教示画面 (ボタン応答式。ふりがな追加)
+    const instructions = {
+      type: jsPsychHtmlButtonResponse,
+      stimulus: `
+        <div class="text-left max-w-xl mx-auto space-y-6">
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-800 text-center mb-4"><ruby>線<rt>せん</rt></ruby>の<ruby>長<rt>なが</rt></ruby>さテスト</h1>
+          
+          <div class="space-y-4 text-slate-600 text-base sm:text-lg leading-relaxed">
+            <p class="font-bold text-slate-800 text-lg">ご<ruby>協力<rt>きょうりょく</rt></ruby>ありがとうございます。<br>これから<ruby>短<rt>みじか</rt></ruby>い<ruby>視覚<rt>しかく</rt></ruby>のテストを<ruby>行<rt>おこな</rt></ruby>います。</p>
+            
+            <p>
+              <ruby>画面<rt>がめん</rt></ruby>に２つの<strong>「<ruby>矢印<rt>やじるし</rt></ruby>のような<ruby>図形<rt>ずけい</rt></ruby>」</strong>が<ruby>上下<rt>じょうげ</rt></ruby>に<ruby>並<rt>なら</rt></ruby>んで<ruby>表示<rt>ひょうじ</rt></ruby>されます。
+            </p>
+            
+            <p>
+              <ruby>下<rt>した</rt></ruby>の<ruby>図形<rt>ずけい</rt></ruby>は、<ruby>画面<rt>がめん</rt></ruby>にある<ruby>丸<rt>まる</rt></ruby>いつまみ（スライダー）を<ruby>動<rt>うご</rt></ruby>かすと、<ruby>横線<rt>よこせん</rt></ruby>の<ruby>長<rt>なが</rt></ruby>さが<ruby>変<rt>か</rt></ruby>わります。
+            </p>
+
+            <div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+              <p class="font-bold text-blue-950 mb-1">あなたの<ruby>課題<rt>かだい</rt></ruby></p>
+              <p class="text-blue-900 text-sm sm:text-base">
+                スライダーを<ruby>左右<rt>さゆう</rt></ruby>に<ruby>動<rt>うご</rt></ruby>かして、<strong>「<ruby>上<rt>うえ</rt></ruby>の<ruby>横線<rt>よこせん</rt></ruby>」と「<ruby>下<rt>した</rt></ruby>の<ruby>横線<rt>よこせん</rt></ruby>」がピッタリ<ruby>同<rt>おな</rt></ruby>じ<ruby>長<rt>なが</rt></ruby>さ</strong>に<ruby>見<rt>み</rt></ruby>えるところで、<ruby>画面<rt>がめん</rt></ruby>の<ruby>下<rt>した</rt></ruby>にある<strong>【決定】</strong>ボタンを押してください。
+              </p>
+            </div>
+
+            <p class="text-xs text-slate-400"><ruby>全部<rt>ぜんぶ</rt></ruby>で 12<ruby>回<rt>かい</rt></ruby> あります。<ruby>直感<rt>ちょっかん</rt></ruby>でどんどん<ruby>進<rt>すす</rt></ruby>めてくださいね！</p>
+          </div>
+        </div>
+      `,
+      choices: ['実験を開始する'],
+      button_html: '<button class="jspsych-btn px-10 py-4 mt-8 bg-blue-500 hover:bg-blue-600 text-white rounded font-bold shadow-lg transition-all duration-200 cursor-pointer text-base w-full sm:w-auto">%choice%</button>'
+    };
+    timeline.push(instructions);
+
+    // C. 各試行の定義
+    for (let i = 0; i < total_trials; i++) {
+      const cond = trial_conditions[i];
+      
+      // スライダーの初期値を100px〜300pxの間でランダムに決定
+      const start_val = Math.floor(Math.random() * (300 - 100 + 1)) + 100;
+
+      const trial = {
+        type: jsPsychCanvasSliderResponse,
+        stimulus: function(c) {
+          // 初期状態の描画（引数: canvas, 長さ, 角度, 羽の長さ）
+          drawMullerLyer(c, start_val, cond.angle, cond.feather_length);
+        },
+        canvas_size: [300, 600], // [高さ, 幅]
+        min: 50,
+        max: 350,
+        step: 1,
+        slider_start: start_val,
+        slider_width: 400,
+        button_label: '決定',
+        prompt: `
+          <div class="mt-4 mb-4">
+            <span class="text-slate-400 text-sm font-medium tracking-wider">
+              <ruby>現在<rt>げんざい</rt></ruby> ${i + 1} <ruby>回目<rt>かいめ</rt></ruby> / <ruby>全<rt>ぜん</rt></ruby> ${total_trials} <ruby>回<rt>かい</rt></ruby>
+            </span>
+            <p class="text-slate-600 font-bold text-base sm:text-lg mt-3">
+              スライダーを<ruby>動<rt>うご</rt></ruby>かして、<ruby>上下<rt>じょうげ</rt></ruby>の<ruby>線<rt>せん</rt></ruby>の<ruby>長<rt>なが</rt></ruby>さを「ピッタリ<ruby>同<rt>おな</rt></ruby>じ」にしてください。
+            </p>
+          </div>
+        `,
+        data: {
+          trial_index_custom: i + 1,
+          angle: cond.angle,
+          feather_length: cond.feather_length,
+          standard_length: 200,
+          slider_start_val: start_val
+        },
+        // スライダー操作時にリアルタイムに描画を更新するための処理
+        on_load: function() {
+          const canvas = document.getElementById('jspsych-canvas-stimulus');
+          const slider = document.querySelector('input[type="range"]');
+          
+          if (canvas && slider) {
+            // スライダーが動くたびに描画関数を呼び出す
+            slider.addEventListener('input', function() {
+              const current_val = parseFloat(slider.value);
+              drawMullerLyer(canvas, current_val, cond.angle, cond.feather_length);
+            });
+          }
+        },
+        on_finish: function(data) {
+          // タイムスタンプ取得（ISO形式）
+          const now = new Date();
+          data.subject_id = participantId;
+          data.timestamp = now.toISOString();
+
+          // 角度 & 羽の長さ
+          data.wing_length = data.feather_length;
+
+          // 参加者が最終的に選択した長さ（主観的等価点：PSE）
+          data.pse = Number(data.response);
+          data.adjusted_length = data.pse;
+
+          // 錯視量（誤差：PSE - 物理的な標準 of 長さ200px）
+          data.error_amount = data.pse - 200;
+          data.illusion_magnitude = data.error_amount;
+        }
+      };
+
+      // 試行間に短いブランク（十字注視点など）を挟む
+      const fixation = {
+        type: jsPsychHtmlKeyboardResponse,
+        stimulus: '<div style="font-size: 40px; color: #cbd5e1; font-weight: 300;">+</div>',
+        choices: "NO_KEYS",
+        trial_duration: 800,
+      };
+
+      timeline.push(fixation);
+      timeline.push(trial);
+    }
+
+    // 5. 実験の開始
+    jsPsych.run(timeline);
+
+    // 6. GASへのデータ送信処理
+    function sendDataToGAS() {
+      // 送信中インジケータを画面中央に美しく表示（ルビ追加）
+      document.getElementById('jspsych-target').innerHTML = `
+        <div class="jspsych-content-wrapper">
+          <div class="jspsych-content max-w-md">
+            <div class="flex flex-col items-center justify-center p-8">
+              <svg class="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <h3 class="text-xl font-bold text-slate-800 mb-2">データを<ruby>送信中<rt>そうしんちゅう</rt></ruby></h3>
+              <p class="text-slate-500 text-sm"><ruby>実験<rt>じっけん</rt></ruby>データをデータベースへ<ruby>自動送信<rt>じどうそうしん</rt></ruby>しています。しばらくそのままでお<ruby>待<rt>ま</rt></ruby>ちください。</p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // データをフィルタリングして整形
+      const raw_trials = jsPsych.data.get().filterCustom(function(t) {
+        return t.adjusted_length !== undefined;
+      }).values();
+
+      const payload = raw_trials.map(d => ({
+        subject_id: d.subject_id,
+        timestamp: d.timestamp,
+        angle: d.angle,
+        wing_length: d.wing_length,
+        pse: d.pse,
+        error_amount: d.error_amount
+      }));
+
+      const gasUrl = 'https://script.google.com/macros/s/AKfycbxuO-fzwAjMUlCxf2oUr4tOiNO34SUPX16I1tr8gVIK2PKgaldS-y4wliXYN42Xu2l2zA/exec';
+
+      // Fetch APIを利用して非同期POST送信
+      fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors', // クロスオリジン制限回避
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        // 送信成功
+        showResults(true, null);
+      })
+      .catch((error) => {
+        // エラー発生時
+        showResults(false, error.message || error);
+      });
+    }
+
+    // 7. 実験終了後のリザルト画面表示処理（変数のエスケープバグを修復）
+    function showResults(sendSuccess = true, errorMsg = null) {
+      const trials_data = jsPsych.data.get().filterCustom(function(t) {
+        return t.adjusted_length !== undefined;
+      }).values();
+      
+      // 条件別のデータを集計するためのオブジェクトを用意
+      const summary = {};
+      
+      trials_data.forEach(d => {
+        const key = `${d.angle}° / ${d.feather_length}px`;
+        if (!summary[key]) {
+          summary[key] = {
+            angle: d.angle,
+            feather_length: d.feather_length,
+            count: 0,
+            sum_adjusted: 0,
+            sum_illusion: 0
+          };
+        }
+        summary[key].count++;
+        summary[key].sum_adjusted += d.adjusted_length;
+        summary[key].sum_illusion += d.illusion_magnitude;
+      });
+
+      // ステータスメッセージの作成
+      let statusHtml = "";
+      if (sendSuccess) {
+        statusHtml = `
+          <div class="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-3 text-emerald-800 text-left">
+            <svg class="h-6 w-6 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+              <p class="font-bold">データ<ruby>送信完了<rt>そうしんかんりょう</rt></ruby></p>
+              <p class="text-xs text-emerald-600"><ruby>実験<rt>じっけん</rt></ruby>データは<ruby>正常<rt>せいじょう</rt></ruby>に<ruby>保存<rt>ほぞん</rt></ruby>されました（<ruby>参加者<rt>さんかしゃ</rt></ruby>ID: <strong>${participantId}</strong>）。ご<ruby>協力<rt>きょうりょく</rt></ruby>ありがとうございました。</p>
+            </div>
+          </div>
+        `;
+      } else {
+        statusHtml = `
+          <div class="mb-6 p-4 bg-rose-50 border border-rose-200 rounded-lg flex items-center gap-3 text-rose-800 text-left">
+            <svg class="h-6 w-6 text-rose-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div>
+              <p class="font-bold">データ<ruby>送信<rt>そうしん</rt></ruby>エラー</p>
+              <p class="text-xs text-rose-600">データベースへの<ruby>送信<rt>そうしん</rt></ruby>に<ruby>失敗<rt>しっぱい</rt></ruby>しました（<ruby>理由<rt>りゆう</rt></ruby>: ${errorMsg || '接続不良'}）。<ruby>手動<rt>しゅどう</rt></ruby>でデータを<ruby>保存<rt>ほぞん</rt></ruby>することをお<ruby>勧<rt>すす</rt></ruby>めします。</p>
+            </div>
+          </div>
+        `;
+      }
+
+      let html = `
+        <div class="text-left max-w-3xl mx-auto">
+          <h2 class="text-3xl font-bold text-slate-800 mb-2 text-center"><ruby>実験結果<rt>じっけんけっか</rt></ruby></h2>
+          <p class="text-center text-slate-500 mb-6">すべての<ruby>試行<rt>しこう</rt></ruby>が<ruby>完了<rt>かんりょう</rt></ruby>しました。<ruby>測定<rt>そくてい</rt></ruby>データは<ruby>以下<rt>いか</rt></ruby>の<ruby>通<rt>とお</rt></ruby>りです。</p>
+          
+          <!-- 送信ステータス -->
+          ${statusHtml}
+
+          <!-- セクション1: 条件別集計表 -->
+          <div class="mb-10">
+            <h3 class="text-lg font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+              <span class="bg-blue-500 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm">1</span>
+              <ruby>条件別集計結果<rt>じょうけんべつしゅうけいけっか</rt></ruby>（<ruby>平均値<rt>へいきんち</rt></ruby>）
+            </h3>
+            <p class="text-slate-500 text-xs mb-3">※ <ruby>各条件<rt>かくじょうけん</rt></ruby> ${repetitions} <ruby>試行<rt>しこう</rt></ruby>ずつの<ruby>平均値<rt>へいきんち</rt></ruby>です。<ruby>錯視量<rt>さくしりょう</rt></ruby> ＝ <ruby>調整値<rt>ちょうせいち</rt></ruby>（PSE）－ 200px（<ruby>正<rt>せい</rt></ruby>の<ruby>値<rt>あtai</rt></ruby>は<ruby>長<rt>なが</rt></ruby>く<ruby>見<rt>み</rt></ruby>えたことを<ruby>示<rt>しめ</rt></ruby>します）</p>
+            <div class="overflow-x-auto border border-slate-200 rounded-lg shadow-sm">
+              <table>
+                <thead>
+                  <tr>
+                    <th><ruby>条件<rt>じょうけん</rt></ruby> (<ruby>角度<rt>かくど</rt></ruby> / <ruby>羽<rt>は</rt></ruby>の<ruby>長<rt>なが</rt></ruby>さ)</th>
+                    <th><ruby>試行数<rt>しこうすう</rt></ruby></th>
+                    <th><ruby>標準<rt>ひょうじゅん</rt></ruby>の<ruby>長<rt>なが</rt></ruby>さ (<ruby>固定<rt>こてい</rt></ruby>)</th>
+                    <th><ruby>平均調整値<rt>へいきんちょうせいち</rt></ruby> [PSE] (px)</th>
+                    <th><ruby>平均錯視量<rt>へいきんさくしりょう</rt></ruby> [<ruby>誤差<rt>ごさ</rt></ruby>] (px)</th>
+                  </tr>
+                </thead>
+                <tbody>
+      `;
+
+      Object.keys(summary).sort().forEach(key => {
+        const s = summary[key];
+        const avg_adjusted = (s.sum_adjusted / s.count).toFixed(1);
+        const avg_illusion = (s.sum_illusion / s.count).toFixed(1);
+        const sign = parseFloat(avg_illusion) > 0 ? '+' : '';
+        const colorClass = parseFloat(avg_illusion) > 0 ? 'text-emerald-600 font-semibold' : parseFloat(avg_illusion) < 0 ? 'text-rose-600 font-semibold' : 'text-slate-500';
+
+        html += `
+          <tr>
+            <td class="font-medium">${key}</td>
+            <td>${s.count} <ruby>回<rt>かい</rt></ruby></td>
+            <td>200 px</td>
+            <td class="font-semibold text-slate-700">${avg_adjusted} px</td>
+            <td class="${colorClass}">${sign}${avg_illusion} px</td>
+          </tr>
+        `;
+      });
+
+      html += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- セクション2: 全試行の生データ詳細表 -->
+          <div class="mb-8">
+            <h3 class="text-lg font-bold text-slate-700 mb-3 flex items-center gap-2 border-b pb-2">
+              <span class="bg-blue-500 text-white rounded-full w-6 h-6 inline-flex items-center justify-center text-sm">2</span>
+              <ruby>試行別詳細<rt>しこうべつしょうさい</rt></ruby>データ（<ruby>生<rt>なま</rt></ruby>データ）
+            </h3>
+            <div class="overflow-x-auto border border-slate-200 rounded-lg shadow-sm max-h-[400px] overflow-y-auto">
+              <table>
+                <thead class="sticky top-0 z-10">
+                  <tr>
+                    <th><ruby>試行<rt>しこう</rt></ruby></th>
+                    <th><ruby>角度<rt>かくど</rt></ruby></th>
+                    <th><ruby>羽<rt>は</rt></ruby>の<ruby>長<rt>なが</rt></ruby>さ</th>
+                    <th><ruby>初期値<rt>しょきち</rt></ruby></th>
+                    <th><ruby>調整値<rt>ちょうせいち</rt></ruby> (PSE)</th>
+                    <th><ruby>錯視量<rt>さくしりょう</rt></ruby> (<ruby>誤差<rt>ごさ</rt></ruby>)</th>
+                  </tr>
+                </thead>
+                <tbody>
+      `;
+
+      trials_data.forEach(d => {
+        const sign = d.illusion_magnitude > 0 ? '+' : '';
+        const colorClass = d.illusion_magnitude > 0 ? 'text-emerald-600' : d.illusion_magnitude < 0 ? 'text-rose-600' : 'text-slate-500';
+        html += `
+          <tr>
+            <td class="text-slate-500 font-medium">${d.trial_index_custom}</td>
+            <td>${d.angle}°</td>
+            <td>${d.feather_length}px</td>
+            <td>${d.slider_start_val}px</td>
+            <td class="font-semibold text-slate-700">${d.adjusted_length}px</td>
+            <td class="${colorClass}">${sign}${d.illusion_magnitude}px</td>
+          </tr>
+        `;
+      });
+
+      html += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- オプション: CSVダウンロードリンク -->
+          <div class="text-center mt-6 pt-4 border-t border-slate-100">
+            <button onclick="downloadCSV()" class="text-slate-500 hover:text-slate-700 font-medium text-sm inline-flex items-center gap-1 transition-colors">
+              📥 <ruby>手動<rt>しゅどう</rt></ruby>バックアップとしてCSVファイルを<ruby>保存<rt>ほぞん</rt></ruby>する
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('jspsych-target').innerHTML = `
+        <div class="jspsych-content-wrapper">
+          <div class="jspsych-content">
+            ${html}
+          </div>
+        </div>
+      `;
+    }
+
+    // CSVの作成とダウンロード
+    function downloadCSV() {
+      const trials_data = jsPsych.data.get().filterCustom(function(t) {
+        return t.adjusted_length !== undefined;
+      }).values();
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "SubjectID,Timestamp,Trial,Angle,WingLength,StandardLength,StartValue,PSE,ErrorAmount\n";
+
+      trials_data.forEach(d => {
+        csvContent += `${d.subject_id},${d.timestamp},${d.trial_index_custom},${d.angle},${d.wing_length},${d.standard_length},${d.slider_start_val},${d.pse},${d.error_amount}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `muller_lyer_${participantId}_results.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
