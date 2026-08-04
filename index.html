@@ -193,7 +193,7 @@
             box-shadow: 0 6px 18px rgba(45, 106, 79, 0.25);
         }
 
-        /* 2. サブボタン（レポート用） */
+        /* 2. サブボタン（レポート・プレレジ用） */
         .btn-secondary {
             display: block;
             text-align: center;
@@ -214,7 +214,7 @@
             transform: translateY(-1px);
         }
 
-        /* 3. 補足用ボタン（プレゼンテーション用） */
+        /* 3. 補足用ボタン（プレゼン・変更履歴用） */
         .btn-tertiary {
             display: flex;
             align-items: center;
@@ -325,12 +325,20 @@
                     <strong>（所要時間：約2分）</strong>
                 </p>
                 <div class="btn-container">
+                    <!-- 既存の実験リンク -->
                     <a href="muller_lyer_final.html" class="experiment-link">実験2に参加する</a>
                     
+                    <!-- 追加：ミュラー・リヤー錯視のレポートページへのリンク -->
+                    <a href="https://rfujiwara2026.github.io/my-experiment/my_exp_report.html" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+                        レポートを見る
+                    </a>
+                    
+                    <!-- 既存のプレレジリンク -->
                     <a href="https://github.com/Rfujiwara2026/my-experiment/blob/main/preregistration.md" target="_blank" rel="noopener noreferrer" class="btn-secondary">
                         プレレジを確認する
                     </a>
                     
+                    <!-- 既存の変更履歴リンク -->
                     <a href="https://github.com/Rfujiwara2026/my-experiment/commits/main/preregistration.md" target="_blank" rel="noopener noreferrer" class="btn-tertiary">
                         <svg class="icon-clock" viewBox="0 0 24 24">
                             <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.2 3.2.8-1.3-4.5-2.7V7z"/>
